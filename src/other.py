@@ -15,8 +15,12 @@ def draw_boxes(im, bboxes, is_display=True, color=None, caption="Image", wait=Tr
     """
         boxes: bounding boxes
     """
-    im=im.copy()
-    for box in bboxes:
+    boxes = filter(lambda b: can_be_plate(b, im), bboxes)
+    # if len(boxes) > 1:
+    #     import ipdb; ipdb.set_trace()
+    # else:
+    #     return
+    for box in boxes:
         if color==None:
             if len(box)==5 or len(box)==9:
                 c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
@@ -24,12 +28,42 @@ def draw_boxes(im, bboxes, is_display=True, color=None, caption="Image", wait=Tr
                 c=tuple(np.random.randint(0, 256, 3))
         else:
             c=color
-        cv2.rectangle(im, tuple(box[:2]), tuple(box[2:4]), c)
+        stretched = stretch(box, im)
+        cv2.rectangle(im, tuple(stretched[:2]), tuple(stretched[2:4]), c)
     if is_display:
         cv2.imshow(caption, im)
         if wait:
             cv2.waitKey(0)
     return im
+
+
+def can_be_plate(box, im):
+    min_white_pixels = 0.4
+    min_aspect_ratio, max_aspect_ratio = 3, 6
+    min_area, max_area = 1000, 20000
+    x1, y1, x2, y2 = map(int, box[:4])
+    width, height = x2 - x1, y2 - y1
+    aspect_ratio = float(width)/height
+    area = width * height
+    if not (min_aspect_ratio < aspect_ratio < max_aspect_ratio and min_area < area < max_area):
+        return False
+
+    _, gray = cv2.threshold(cv2.cvtColor(im[y1:y2, x1:x2], cv2.COLOR_BGR2GRAY), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    white_pixels = np.count_nonzero(gray == 255)
+    return white_pixels > min_white_pixels * area
+
+
+def stretch(box, im, scale=1.1):
+    im_height, im_width = im.shape[:2]
+    x1, y1, x2, y2 = box[:4]
+    xc, yc = (x1+x2) / 2,(y1+y2) / 2
+    new_width, new_height = scale * (x2-x1), scale * (y2-y1)
+    new_x1 = max(0, int(xc - new_width / 2))
+    new_x2 = min(im_width, int(xc + new_width / 2))
+    new_y1 = max(0, int(yc - new_height / 2))
+    new_y2 = min(im_height, int(yc + new_height / 2))
+    print new_x1, new_y1, new_x2, new_y2, ',',
+    return new_x1, new_y1, new_x2, new_y2
 
 
 def threshold(coords, min_, max_):

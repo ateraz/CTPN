@@ -25,7 +25,7 @@ from detectors import TextProposalDetector, TextDetector
 import os.path as osp
 from utils.timer import Timer
 
-DEMO_IMAGE_DIR="demo_images/"
+DEMO_IMAGE_DIR="/Users/ateraz/Downloads/autos/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
 
@@ -42,24 +42,29 @@ text_detector=TextDetector(text_proposals_detector)
 demo_imnames=os.listdir(DEMO_IMAGE_DIR)
 timer=Timer()
 
-for im_name in demo_imnames:
-    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    print "Image: %s"%im_name
+#import ipdb; ipdb.set_trace()
+for im_name in set(os.listdir("/Users/ateraz/Downloads/autos 2/")) - set(os.listdir("/Users/ateraz/Downloads/autos/")):
+    #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    print "\n%s"%im_name,
+    if 'jpg' not in im_name:
+        continue
 
-    im_file=osp.join(DEMO_IMAGE_DIR, im_name)
+    im_file=osp.join("/Users/ateraz/Downloads/autos 2/", im_name)
     im=cv2.imread(im_file)
+    height = im.shape[0]
+    #im=im[int(height*0.10):int(height*0.9), :]
 
     timer.tic()
 
     im, f=resize_im(im, cfg.SCALE, cfg.MAX_SCALE)
     text_lines=text_detector.detect(im)
 
-    print "Number of the detected text lines: %s"%len(text_lines)
-    print "Time: %f"%timer.toc()
+    #print "Number of the detected text lines: %s"%len(text_lines)
+    #print "Time: %f"%timer.toc()
 
-    im_with_text_lines=draw_boxes(im, text_lines, caption=im_name, wait=False)
+    im_with_text_lines=draw_boxes(im, text_lines, is_display=False, caption=im_name, wait=True)
 
-print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-print "Thank you for trying our demo. Press any key to exit..."
-cv2.waitKey(0)
+#print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+#print "Thank you for trying our demo. Press any key to exit..."
+#cv2.waitKey(0)
 
