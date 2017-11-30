@@ -24,8 +24,9 @@ import cv2, os, caffe, sys
 from detectors import TextProposalDetector, TextDetector
 import os.path as osp
 from utils.timer import Timer
+from matplotlib import cm
 
-DEMO_IMAGE_DIR="/Users/ateraz/Downloads/autos/"
+DEMO_IMAGE_DIR="uploads/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
 
@@ -42,14 +43,11 @@ text_detector=TextDetector(text_proposals_detector)
 demo_imnames=os.listdir(DEMO_IMAGE_DIR)
 timer=Timer()
 
-#import ipdb; ipdb.set_trace()
-for im_name in set(os.listdir("/Users/ateraz/Downloads/autos 2/")) - set(os.listdir("/Users/ateraz/Downloads/autos/")):
-    #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    print "\n%s"%im_name,
+for im_name in demo_imnames:
     if 'jpg' not in im_name:
         continue
 
-    im_file=osp.join("/Users/ateraz/Downloads/autos 2/", im_name)
+    im_file=osp.join(DEMO_IMAGE_DIR, im_name)
     im=cv2.imread(im_file)
     height = im.shape[0]
     #im=im[int(height*0.10):int(height*0.9), :]
@@ -62,7 +60,11 @@ for im_name in set(os.listdir("/Users/ateraz/Downloads/autos 2/")) - set(os.list
     #print "Number of the detected text lines: %s"%len(text_lines)
     #print "Time: %f"%timer.toc()
 
-    im_with_text_lines=draw_boxes(im, text_lines, is_display=False, caption=im_name, wait=True)
+    color = tuple(cm.jet([0.9])[0, 2::-1]*255)
+    im_with_text_lines=draw_boxes(im, text_lines, is_display=False, caption=im_name, wait=True, color=color)
+    cv2.imwrite('./web/processed/' + im_name.replace('.', '_with_boxes.'), im_with_text_lines)
+    # Actual recognition result should be printed here
+    print 'AA 0000 AA'
 
 #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 #print "Thank you for trying our demo. Press any key to exit..."

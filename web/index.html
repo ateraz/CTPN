@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=utf-8>
+    <title>License plate recognition</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <style>
+        body {
+            max-width: 1000px;
+            margin: auto;
+        }
+        form {
+            width: 400px;
+            margin: 20px 20px 20px 120px;
+        }
+        img {
+            height: 500px;
+            display: block;
+            margin: auto;
+        }
+        div#result p {
+            margin: 20px 20px 20px 120px;
+            display: none;
+        }
+        img#loading {
+            display: none;
+        }
+        p {
+        }
+    </style>
+</head>
+<body>
+    <form action="/result" method="post" enctype="multipart/form-data">
+        Select photo to process:
+        <input type="file" name="file">
+    </form>
+    <div id="result">
+        <p>Found license plate: <span></span></p>
+        <img src="{{ url_for('static', filename='giphy.webp') }}" id="loading"/>
+        <img src="{{ url_for('static', filename='no-image.gif') }}" id="image"/>
+    </div>
+</body>
+</html>

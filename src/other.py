@@ -16,10 +16,6 @@ def draw_boxes(im, bboxes, is_display=True, color=None, caption="Image", wait=Tr
         boxes: bounding boxes
     """
     boxes = filter(lambda b: can_be_plate(b, im), bboxes)
-    # if len(boxes) > 1:
-    #     import ipdb; ipdb.set_trace()
-    # else:
-    #     return
     for box in boxes:
         if color==None:
             if len(box)==5 or len(box)==9:
@@ -62,7 +58,8 @@ def stretch(box, im, scale=1.1):
     new_x2 = min(im_width, int(xc + new_width / 2))
     new_y1 = max(0, int(yc - new_height / 2))
     new_y2 = min(im_height, int(yc + new_height / 2))
-    print new_x1, new_y1, new_x2, new_y2, ',',
+    # cv2.imshow('', im[new_y1:new_y2, new_x1:new_x2])
+    # cv2.waitKey(0)
     return new_x1, new_y1, new_x2, new_y2
 
 
