@@ -102,4 +102,4 @@ for im_name in demo_imnames:
         net_inp = model.get_layer(name='the_input').input
         net_out = model.get_layer(name='softmax').output
         net_out_value = sess.run(net_out, feed_dict={net_inp:img})
-        print decode_batch(net_out_value)[0]
+        print decode_batch(net_out_value)[0], np.mean(sorted(net_out_value[0].max(axis=0))[-8:])

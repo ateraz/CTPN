@@ -8,7 +8,6 @@ app = Flask(__name__, template_folder='web', static_folder='web')
 
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 SCRIPT = "python2.7 tools/demo.py --no-gpu" 
-#SCRIPT = "echo zzzz"
 app.config["UPLOAD_FOLDER"] = "./uploads"
 
 
@@ -41,4 +40,4 @@ def upload_file():
 def index():
     return render_template('index.html')
 
-app.run(debug=True, host='0.0.0.0')
+app.run(debug=True)

@@ -31,8 +31,8 @@ def draw_boxes(im, bboxes, is_display=True, color=None, caption="Image", wait=Tr
     """
         boxes: bounding boxes
     """
-    boxes = filter(lambda b: can_be_plate(b, im), bboxes)
-    for box in boxes:
+    #boxes = filter(lambda b: can_be_plate(b, im), bboxes)
+    for box in bboxes:
         if color==None:
             if len(box)==5 or len(box)==9:
                 c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
@@ -53,13 +53,13 @@ def cut_boxes(im, bboxes, color=None):
     """
         boxes: bounding boxes
     """
-    boxes = filter(lambda b: can_be_plate(b, im), bboxes)
+    #boxes = filter(lambda b: can_be_plate(b, im), bboxes)
     # if len(boxes) > 1:
     #     import ipdb; ipdb.set_trace()
     # else:
     #     return
     crop_img = []
-    for box in boxes:
+    for box in bboxes:
         if color==None:
             if len(box)==5 or len(box)==9:
                 c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
