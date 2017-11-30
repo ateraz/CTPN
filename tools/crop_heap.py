@@ -19,44 +19,15 @@
 #
 
 from cfg import Config as cfg
-from other import draw_boxes, cut_boxes, resize_im, CaffeModel, create_osr_model
+from other import draw_boxes, cut_boxes, resize_im, CaffeModel
 import cv2, os, caffe, sys
 from detectors import TextProposalDetector, TextDetector
 import os.path as osp
-import numpy as np
-import itertools
 from utils.timer import Timer
 
-import tensorflow as tf
-from keras import backend as K
-from keras.models import load_model
-
-DEMO_IMAGE_DIR="uploads/"
+DEMO_IMAGE_DIR="/mnt/license_plates/autos/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
-OSR_MODEL_FILE="../supervisely-tutorials/anpr_ocr/models/model5000_ua_25e_rnn256_rotation5.h5"
-LETTERS = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'E', 'H', 'I', 'K', 'M', 'O', 'P', 'T', 'X')
-
-def decode_batch(out):
-    ret = []
-    for j in range(out.shape[0]):
-        out_best = list(np.argmax(out[j, 2:], 1))
-        out_best = [k for k, g in itertools.groupby(out_best)]
-        outstr = ''
-        for c in out_best:
-            if c < len(LETTERS):
-                outstr += LETTERS[c]
-        ret.append(outstr)
-    return ret
-
-config = tf.ConfigProto(
-        device_count = {'GPU': 0}
-    )
-sess = tf.Session(config=config)
-K.set_session(sess)
-
-model = create_osr_model(128)
-model.load_weights(OSR_MODEL_FILE)
 
 if len(sys.argv)>1 and sys.argv[1]=="--no-gpu":
     caffe.set_mode_cpu()
@@ -73,13 +44,13 @@ timer=Timer()
 
 #import ipdb; ipdb.set_trace()
 img_w, img_h = 128, 64
-for im_name in demo_imnames:
+for im_name in set(os.listdir("/mnt/license_plates/autos/")):
     #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    #print "\n%s"%im_name,
+    print "\n%s"%im_name,
     if 'jpg' not in im_name:
         continue
 
-    im_file=osp.join(DEMO_IMAGE_DIR, im_name)
+    im_file=osp.join("/mnt/license_plates/autos/", im_name)
     im=cv2.imread(im_file)
     height = im.shape[0]
     #im=im[int(height*0.10):int(height*0.9), :]
@@ -91,23 +62,7 @@ for im_name in demo_imnames:
     #print "Number of the detected text lines: %s"%len(text_lines)
     #print "Time: %f"%timer.toc()
 
-    #im_with_text_lines = draw_boxes(im, text_lines, is_display=False, caption=im_name, wait=True)
-    #import pdb; pdb.set_trace()
-    img_list = cut_boxes(im, text_lines)
-    for img in img_list: 
-        r,g,b = cv2.split(img)
-        img = cv2.merge([b,g,r])
-
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = cv2.resize(img, (img_w, img_h))
-        img = img / 255.0
-        img = img.T
-        img = img.reshape(1, img_w, img_h, 1)
-        net_inp = model.get_layer(name='the_input').input
-        net_out = model.get_layer(name='softmax').output
-        net_out_value = sess.run(net_out, feed_dict={net_inp:img})
-        print decode_batch(net_out_value)[0]
-    
+    im_with_text_lines = draw_boxes(im, text_lines, is_display=False, caption=im_name, wait=True)
 #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 #print "Thank you for trying our demo. Press any key to exit..."
 #cv2.waitKey(0)
