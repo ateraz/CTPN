@@ -145,7 +145,7 @@ def create_osr_model(img_w, load=False):
     kernel_size = (3, 3)
     pool_size = 2
     time_dense_size = 32
-    rnn_size = 256
+    rnn_size = 512
 
     if K.image_data_format() == 'channels_first':
         input_shape = (1, img_w, img_h)

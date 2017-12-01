@@ -27,6 +27,7 @@ import numpy as np
 import itertools
 from utils.timer import Timer
 from matplotlib import cm
+from operator import mul
 
 import tensorflow as tf
 from keras import backend as K
@@ -36,6 +37,7 @@ DEMO_IMAGE_DIR="uploads/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
 OSR_MODEL_FILE="../supervisely-tutorials/anpr_ocr/models/model5000_ua_25e_rnn256_rotation5.h5"
+OSR_MODEL_FILE="..//supervisely-tutorials/anpr_ocr/models/model12000_ua_200e_cnn16x16x_fc32_rnn512_rotation3.h5"
 LETTERS = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'E', 'H', 'I', 'K', 'M', 'O', 'P', 'T', 'X')
 
 def decode_batch(out):
@@ -102,4 +104,4 @@ for im_name in demo_imnames:
         net_inp = model.get_layer(name='the_input').input
         net_out = model.get_layer(name='softmax').output
         net_out_value = sess.run(net_out, feed_dict={net_inp:img})
-        print decode_batch(net_out_value)[0], np.mean(sorted(net_out_value[0].max(axis=0))[-8:])
+        print decode_batch(net_out_value)[0], reduce(mul, sorted(net_out_value[0].max(axis=0))[-8:], 1)
