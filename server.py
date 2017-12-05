@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__, template_folder='web', static_folder='web')
 
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
-SCRIPT = "python2.7 tools/demo.py --no-gpu" 
+SCRIPT = "python2.7 tools/demo_lbp.py" 
 app.config["UPLOAD_FOLDER"] = "./uploads"
 
 
