@@ -37,7 +37,8 @@ DEMO_IMAGE_DIR="uploads/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
 OSR_MODEL_FILE="../supervisely-tutorials/anpr_ocr/models/model5000_ua_25e_rnn256_rotation5.h5"
-OSR_MODEL_FILE="..//supervisely-tutorials/anpr_ocr/models/model12000_ua_200e_cnn16x16x_fc32_rnn512_rotation3.h5"
+OSR_MODEL_FILE="../supervisely-tutorials/anpr_ocr/models/model12000_ua_200e_cnn16x16x_fc32_rnn512_rotation3.h5"
+OSR_MODEL_FILE="../supervisely-tutorials/anpr_ocr/models/weights-improvement-185-1.1535.hdf5"
 LETTERS = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'E', 'H', 'I', 'K', 'M', 'O', 'P', 'T', 'X')
 
 def decode_batch(out):
@@ -58,7 +59,7 @@ config = tf.ConfigProto(
 sess = tf.Session(config=config)
 K.set_session(sess)
 
-model = create_osr_model(128)
+model = create_osr_model(256)
 model.load_weights(OSR_MODEL_FILE)
 
 if len(sys.argv)>1 and sys.argv[1]=="--no-gpu":
@@ -73,7 +74,7 @@ text_detector=TextDetector(text_proposals_detector)
 
 demo_imnames=os.listdir(DEMO_IMAGE_DIR)
 
-img_w, img_h = 128, 64
+img_w, img_h = 256, 48
 for im_name in demo_imnames:
     if 'jpg' not in im_name:
         continue
@@ -104,4 +105,6 @@ for im_name in demo_imnames:
         net_inp = model.get_layer(name='the_input').input
         net_out = model.get_layer(name='softmax').output
         net_out_value = sess.run(net_out, feed_dict={net_inp:img})
-        print decode_batch(net_out_value)[0], reduce(mul, sorted(net_out_value[0].max(axis=0))[-8:], 1)
+        mult_prob = round(reduce(mul, sorted(net_out_value[0].max(axis=0))[-8:], 1), 2)
+        avg_prob = round(np.mean(sorted(net_out_value[0].max(axis=0))[-8:]), 2)
+        print decode_batch(net_out_value)[0], mult_prob, avg_prob, '\n'

@@ -31,8 +31,9 @@ def draw_boxes(im, bboxes, is_display=True, color=None, caption="Image", wait=Tr
     """
         boxes: bounding boxes
     """
-    #boxes = filter(lambda b: can_be_plate(b, im), bboxes)
-    for box in bboxes:
+    #im = img.copy()
+    boxes = filter(lambda b: can_be_plate(b, im), bboxes)
+    for box in boxes:
         if color==None:
             if len(box)==5 or len(box)==9:
                 c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
@@ -53,13 +54,13 @@ def cut_boxes(im, bboxes, color=None):
     """
         boxes: bounding boxes
     """
-    #boxes = filter(lambda b: can_be_plate(b, im), bboxes)
+    boxes = filter(lambda b: can_be_plate(b, im), bboxes)
     # if len(boxes) > 1:
     #     import ipdb; ipdb.set_trace()
     # else:
     #     return
     crop_img = []
-    for box in bboxes:
+    for box in boxes:
         if color==None:
             if len(box)==5 or len(box)==9:
                 c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
@@ -73,10 +74,13 @@ def cut_boxes(im, bboxes, color=None):
 
 
 def can_be_plate(box, im):
-    min_white_pixels = 0.1
+    im_h, _, _ = im.shape
+    min_white_pixels = 0.001
     min_aspect_ratio, max_aspect_ratio = 3, 6
-    min_area, max_area = 1000, 20000
+    min_area, max_area = 100, 20000
     x1, y1, x2, y2 = map(int, box[:4])
+    if x1 < 0.1*im_h or x2 < 0.1*im_h or x1>0.9*im_h or x2>0.9*im_h:
+        return False
     width, height = x2 - x1, y2 - y1
     aspect_ratio = float(width)/height
     area = width * height
@@ -88,7 +92,7 @@ def can_be_plate(box, im):
     return white_pixels > min_white_pixels * area
 
 
-def stretch(box, im, scale=1.1):
+def stretch(box, im, scale=1.2):
     im_height, im_width = im.shape[:2]
     x1, y1, x2, y2 = box[:4]
     xc, yc = (x1+x2) / 2,(y1+y2) / 2
@@ -139,9 +143,10 @@ def ctc_lambda_func(args):
 
 
 def create_osr_model(img_w, load=False):
-    img_h = 64
+    img_h = 48
     # Network parameters
-    conv_filters = 16
+    conv_filters_1 = 16
+    conv_filters_2 = 32
     kernel_size = (3, 3)
     pool_size = 2
     time_dense_size = 32
@@ -157,16 +162,16 @@ def create_osr_model(img_w, load=False):
 
     act = 'relu'
     input_data = Input(name='the_input', shape=input_shape, dtype='float32')
-    inner = Conv2D(conv_filters, kernel_size, padding='same',
+    inner = Conv2D(conv_filters_1, kernel_size, padding='same',
                    activation=act, kernel_initializer='he_normal',
                    name='conv1')(input_data)
     inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max1')(inner)
-    inner = Conv2D(conv_filters, kernel_size, padding='same',
+    inner = Conv2D(conv_filters_2, kernel_size, padding='same',
                    activation=act, kernel_initializer='he_normal',
                    name='conv2')(inner)
     inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max2')(inner)
 
-    conv_to_rnn_dims = (img_w // (pool_size ** 2), (img_h // (pool_size ** 2)) * conv_filters)
+    conv_to_rnn_dims = (img_w // (pool_size ** 2), (img_h // (pool_size ** 2)) * conv_filters_2)
     inner = Reshape(target_shape=conv_to_rnn_dims, name='reshape')(inner)
 
     # cuts down input size going into RNN:
